@@ -1,0 +1,20 @@
+{
+  "name": "pmill/aws-cognito",
+  "description": "A PHP client for AWS Cognito user pools",
+  "keywords": ["php", "authentication", "aws", "cognito", "api"],
+  "homepage": "https://github.com/pmill/aws-cognito",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "pmill",
+      "email": "dev.pmill@gmail.com"
+    }
+  ],
+  "require": {
+    "aws/aws-sdk-php": "^3.26",
+    "spomky-labs/jose": "^6.1"
+  },
+  "autoload": {
+    "psr-4": {"pmill\\AwsCognito\\": "src/"}
+  }
+}
