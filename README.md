@@ -40,6 +40,10 @@ before running them.
 Version History
 ---------------
 
+0.1.0 (30/04/2017)
+
+*   Returned username when verifying access tokens
+
 0.1.0 (28/04/2017)
 
 *   First public release of aws-cognito

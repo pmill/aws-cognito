@@ -238,10 +238,14 @@ class CognitoClient
     }
 
     /**
+     * Verifies the given access token and returns the username
+     *
      * @param string $accessToken
      *
      * @throws TokenExpiryException
      * @throws TokenVerificationException
+     *
+     * @return string
      */
     public function verifyAccessToken($accessToken)
     {
@@ -263,6 +267,8 @@ class CognitoClient
         if ($jwtPayload['exp'] < time()) {
             throw new TokenExpiryException('invalid exp');
         }
+
+        return $jwtPayload['username'];
     }
 
     /**
