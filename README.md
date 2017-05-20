@@ -40,7 +40,11 @@ before running them.
 Version History
 ---------------
 
-0.1.0 (30/04/2017)
+0.1.2 (20/05/2017)
+
+*   Added method to refresh authentication tokens
+
+0.1.1 (30/04/2017)
 
 *   Returned username when verifying access tokens
 
