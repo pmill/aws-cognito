@@ -74,6 +74,28 @@ class CognitoClient
     }
 
     /**
+     * @param string $username
+     * @param string $refreshToken
+     *
+     * @return array
+     */
+    public function refreshAuthentication($username, $refreshToken)
+    {
+        $response = $this->client->adminInitiateAuth([
+            'AuthFlow' => 'REFRESH_TOKEN_AUTH',
+            'AuthParameters' => [
+                'USERNAME' => $username,
+                'REFRESH_TOKEN' => $refreshToken,
+                'SECRET_HASH' => $this->cognitoSecretHash($username),
+            ],
+            'ClientId' => $this->appClientId,
+            'UserPoolId' => $this->userPoolId,
+        ]);
+
+        return (array)$response['AuthenticationResult'];
+    }
+
+    /**
      * @param string $accessToken
      * @param string $previousPassword
      * @param string $proposedPassword
