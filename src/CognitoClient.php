@@ -156,7 +156,7 @@ class CognitoClient
      * @param string $password
      * @param array $attributes
      *
-     * @return bool
+     * @return string
      */
     public function registerUser($username, $password, array $attributes = [])
     {
@@ -176,7 +176,7 @@ class CognitoClient
             'Username' => $username,
         ]);
 
-        return (bool) $response['UserConfirmed'];
+        return $response['UserSub'];
     }
 
     /**
