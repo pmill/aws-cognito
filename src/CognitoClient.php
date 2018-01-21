@@ -2,9 +2,11 @@
 namespace pmill\AwsCognito;
 
 use Aws\CognitoIdentityProvider\CognitoIdentityProviderClient;
+use Exception;
 use Jose\Factory\JWKFactory;
 use Jose\Loader;
 use Jose\Object\DownloadedJWKSet;
+use pmill\AwsCognito\Exception\ChallengeException;
 use pmill\AwsCognito\Exception\TokenExpiryException;
 use pmill\AwsCognito\Exception\TokenVerificationException;
 use Psr\Cache\CacheItemPoolInterface;
@@ -56,10 +58,12 @@ class CognitoClient
      * @param string $password
      *
      * @return array
+     * @throws ChallengeException
+     * @throws Exception
      */
     public function authenticate($username, $password)
     {
-        $response = $this->client->adminInitiateAuth([
+        $response = (array)$this->client->adminInitiateAuth([
             'AuthFlow' => 'ADMIN_NO_SRP_AUTH',
             'AuthParameters' => [
                 'USERNAME' => $username,
@@ -70,7 +74,28 @@ class CognitoClient
             'UserPoolId' => $this->userPoolId,
         ]);
 
-        return (array)$response['AuthenticationResult'];
+        return $this->handleAuthenticateResponse($response);
+    }
+
+    /**
+     * @param string $challengeName
+     * @param array $challengeResponses
+     * @param string $session
+     *
+     * @return array
+     * @throws ChallengeException
+     * @throws Exception
+     */
+    public function responseToAuthChallenge($challengeName, array $challengeResponses, $session)
+    {
+        $response = (array) $this->client->respondToAuthChallenge([
+            'ChallengeName' => $challengeName,
+            'ChallengeResponses' => $challengeResponses,
+            'ClientId' => $this->appClientId,
+            'Session' => $session,
+        ]);
+
+        return $this->handleAuthenticateResponse($response);
     }
 
     /**
@@ -318,5 +343,24 @@ class CognitoClient
         );
 
         return base64_encode($hash);
+    }
+
+    /**
+     * @param array $response
+     * @return array
+     * @throws ChallengeException
+     * @throws Exception
+     */
+    protected function handleAuthenticateResponse(array $response)
+    {
+        if (isset($response['AuthenticationResult'])) {
+            return $response['AuthenticationResult'];
+        }
+
+        if (isset($response['ChallengeName'])) {
+            throw ChallengeException::createFromAuthenticateResponse($response);
+        }
+
+        throw new Exception('Could not handle AdminInitiateAuth response');
     }
 }
