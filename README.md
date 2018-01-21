@@ -40,6 +40,10 @@ before running them.
 Version History
 ---------------
 
+0.1.3 (12/11/2017)
+
+*   Returned generated cognito username when registering
+
 0.1.2 (20/05/2017)
 
 *   Added method to refresh authentication tokens
