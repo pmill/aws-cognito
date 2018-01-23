@@ -86,7 +86,7 @@ class CognitoClient
      * @throws ChallengeException
      * @throws Exception
      */
-    public function responseToAuthChallenge($challengeName, array $challengeResponses, $session)
+    public function respondToAuthChallenge($challengeName, array $challengeResponses, $session)
     {
         $response = (array) $this->client->respondToAuthChallenge([
             'ChallengeName' => $challengeName,
