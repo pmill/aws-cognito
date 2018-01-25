@@ -12,7 +12,7 @@
   ],
   "require": {
     "aws/aws-sdk-php": "^3.26",
-    "spomky-labs/jose": "^6.1"
+    "web-token/jwt-signature": "^1.0"
   },
   "autoload": {
     "psr-4": {"pmill\\AwsCognito\\": "src/"}

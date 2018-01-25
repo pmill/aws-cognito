@@ -40,6 +40,12 @@ before running them.
 Version History
 ---------------
 
+0.2.0 (25/01/2018)
+
+*   Replaced spomky-labs/jose library with web-token/jwt-signature
+*   Added handling for authentication challenges
+*   Removed jwt key set caching code, replaced with getter/setter
+
 0.1.3 (12/11/2017)
 
 *   Returned generated cognito username when registering

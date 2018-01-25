@@ -3,16 +3,20 @@ namespace pmill\AwsCognito;
 
 use Aws\CognitoIdentityProvider\CognitoIdentityProviderClient;
 use Exception;
-use Jose\Factory\JWKFactory;
-use Jose\Loader;
-use Jose\Object\DownloadedJWKSet;
+use Jose\Component\Core\AlgorithmManager;
+use Jose\Component\Core\Converter\StandardConverter;
+use Jose\Component\Core\JWKSet;
+use Jose\Component\Signature\Algorithm\RS256;
+use Jose\Component\Signature\JWSVerifier;
+use Jose\Component\Signature\Serializer\CompactSerializer;
 use pmill\AwsCognito\Exception\ChallengeException;
 use pmill\AwsCognito\Exception\TokenExpiryException;
 use pmill\AwsCognito\Exception\TokenVerificationException;
-use Psr\Cache\CacheItemPoolInterface;
 
 class CognitoClient
 {
+    const CHALLENGE_NEW_PASSWORD_REQUIRED = 'NEW_PASSWORD_REQUIRED';
+
     /**
      * @var string
      */
@@ -29,7 +33,7 @@ class CognitoClient
     protected $client;
 
     /**
-     * @var DownloadedJWKSet
+     * @var JWKSet
      */
     protected $jwtWebKeys;
 
@@ -63,7 +67,7 @@ class CognitoClient
      */
     public function authenticate($username, $password)
     {
-        $response = (array)$this->client->adminInitiateAuth([
+        $response = $this->client->adminInitiateAuth([
             'AuthFlow' => 'ADMIN_NO_SRP_AUTH',
             'AuthParameters' => [
                 'USERNAME' => $username,
@@ -74,7 +78,7 @@ class CognitoClient
             'UserPoolId' => $this->userPoolId,
         ]);
 
-        return $this->handleAuthenticateResponse($response);
+        return $this->handleAuthenticateResponse($response->toArray());
     }
 
     /**
@@ -88,14 +92,35 @@ class CognitoClient
      */
     public function respondToAuthChallenge($challengeName, array $challengeResponses, $session)
     {
-        $response = (array) $this->client->respondToAuthChallenge([
+        $response = $this->client->respondToAuthChallenge([
             'ChallengeName' => $challengeName,
             'ChallengeResponses' => $challengeResponses,
             'ClientId' => $this->appClientId,
             'Session' => $session,
         ]);
 
-        return $this->handleAuthenticateResponse($response);
+        return $this->handleAuthenticateResponse($response->toArray());
+    }
+
+    /**
+     * @param string $username
+     * @param string $newPassword
+     * @param string $session
+     * @return array
+     * @throws ChallengeException
+     * @throws Exception
+     */
+    public function respondToNewPasswordRequiredChallenge($username, $newPassword, $session)
+    {
+        return $this->respondToAuthChallenge(
+            self::CHALLENGE_NEW_PASSWORD_REQUIRED,
+            [
+                'NEW_PASSWORD' => $newPassword,
+                'USERNAME' => $username,
+                'SECRET_HASH' => $this->cognitoSecretHash($username),
+            ],
+            $session
+        );
     }
 
     /**
@@ -115,9 +140,9 @@ class CognitoClient
             ],
             'ClientId' => $this->appClientId,
             'UserPoolId' => $this->userPoolId,
-        ]);
+        ])->toArray();
 
-        return (array)$response['AuthenticationResult'];
+        return $response['AuthenticationResult'];
     }
 
     /**
@@ -163,9 +188,30 @@ class CognitoClient
     }
 
     /**
-     * @param CacheItemPoolInterface $cache
+     * @return JWKSet
      */
-    public function downloadJwtWebKeys(CacheItemPoolInterface $cache = null)
+    public function getJwtWebKeys()
+    {
+        if (!$this->jwtWebKeys) {
+            $json = $this->downloadJwtWebKeys();
+            $this->jwtWebKeys = JWKSet::createFromJson($json);
+        }
+
+        return $this->jwtWebKeys;
+    }
+
+    /**
+     * @param JWKSet $jwtWebKeys
+     */
+    public function setJwtWebKeys(JWKSet $jwtWebKeys)
+    {
+        $this->jwtWebKeys = $jwtWebKeys;
+    }
+
+    /**
+     * @return string
+     */
+    protected function downloadJwtWebKeys()
     {
         $url = sprintf(
             'https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json',
@@ -173,7 +219,7 @@ class CognitoClient
             $this->userPoolId
         );
 
-        $this->jwtWebKeys = JWKFactory::createFromJKU($url, false, $cache);
+        return file_get_contents($url);
     }
 
     /**
@@ -296,11 +342,23 @@ class CognitoClient
      */
     public function verifyAccessToken($accessToken)
     {
-        $signatureIndex = null;
-        $loader = new Loader();
-        $jwt = $loader->loadAndVerifySignatureUsingKeySet($accessToken, $this->jwtWebKeys, ['RS256'], $signatureIndex);
-        /** @var array $jwtPayload */
-        $jwtPayload = $jwt->getPayload();
+        $algorithmManager = AlgorithmManager::create([
+            new RS256(),
+        ]);
+
+        $serializerManager = new CompactSerializer(new StandardConverter());
+
+        $jws = $serializerManager->unserialize($accessToken);
+        $jwsVerifier = new JWSVerifier(
+            $algorithmManager
+        );
+
+        $keySet = $this->getJwtWebKeys();
+        if (!$jwsVerifier->verifyWithKeySet($jws, $keySet, 0)) {
+            throw new TokenVerificationException('could not verify token');
+        }
+
+        $jwtPayload = json_decode($jws->getPayload(), true);
 
         $expectedIss = sprintf('https://cognito-idp.%s.amazonaws.com/%s', $this->region, $this->userPoolId);
         if ($jwtPayload['iss'] !== $expectedIss) {
@@ -323,7 +381,7 @@ class CognitoClient
      *
      * @return string
      */
-    protected function cognitoSecretHash($username)
+    public function cognitoSecretHash($username)
     {
         return $this->hash($username . $this->appClientId);
     }
@@ -360,7 +418,7 @@ class CognitoClient
         if (isset($response['ChallengeName'])) {
             throw ChallengeException::createFromAuthenticateResponse($response);
         }
-
+        
         throw new Exception('Could not handle AdminInitiateAuth response');
     }
 }

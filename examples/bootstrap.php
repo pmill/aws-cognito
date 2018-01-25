@@ -11,6 +11,5 @@ $client->setAppClientId($config['app_client_id']);
 $client->setAppClientSecret($config['app_client_secret']);
 $client->setRegion($config['region']);
 $client->setUserPoolId($config['user_pool_id']);
-$client->downloadJwtWebKeys();
 
 return $client;
