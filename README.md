@@ -40,6 +40,10 @@ before running them.
 Version History
 ---------------
 
+0.2.1 (25/01/2018)
+
+*   Added method to return full token payload
+
 0.2.0 (25/01/2018)
 
 *   Replaced spomky-labs/jose library with web-token/jwt-signature
