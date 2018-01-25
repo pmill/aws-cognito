@@ -331,16 +331,11 @@ class CognitoClient
     }
 
     /**
-     * Verifies the given access token and returns the username
-     *
      * @param string $accessToken
-     *
-     * @throws TokenExpiryException
+     * @return array
      * @throws TokenVerificationException
-     *
-     * @return string
      */
-    public function verifyAccessToken($accessToken)
+    public function decodeAccessToken($accessToken)
     {
         $algorithmManager = AlgorithmManager::create([
             new RS256(),
@@ -358,7 +353,22 @@ class CognitoClient
             throw new TokenVerificationException('could not verify token');
         }
 
-        $jwtPayload = json_decode($jws->getPayload(), true);
+        return json_decode($jws->getPayload(), true);
+    }
+
+    /**
+     * Verifies the given access token and returns the username
+     *
+     * @param string $accessToken
+     *
+     * @throws TokenExpiryException
+     * @throws TokenVerificationException
+     *
+     * @return string
+     */
+    public function verifyAccessToken($accessToken)
+    {
+        $jwtPayload = $this->decodeAccessToken($accessToken);
 
         $expectedIss = sprintf('https://cognito-idp.%s.amazonaws.com/%s', $this->region, $this->userPoolId);
         if ($jwtPayload['iss'] !== $expectedIss) {
@@ -418,7 +428,7 @@ class CognitoClient
         if (isset($response['ChallengeName'])) {
             throw ChallengeException::createFromAuthenticateResponse($response);
         }
-        
+
         throw new Exception('Could not handle AdminInitiateAuth response');
     }
 }
