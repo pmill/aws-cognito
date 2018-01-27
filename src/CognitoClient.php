@@ -11,6 +11,7 @@ use Jose\Component\Signature\Algorithm\RS256;
 use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use pmill\AwsCognito\Exception\ChallengeException;
+use pmill\AwsCognito\Exception\CognitoResponseException;
 use pmill\AwsCognito\Exception\TokenExpiryException;
 use pmill\AwsCognito\Exception\TokenVerificationException;
 
@@ -82,13 +83,7 @@ class CognitoClient
 
             return $this->handleAuthenticateResponse($response->toArray());
         } catch (CognitoIdentityProviderException $e) {
-            $errorClass = "pmill\\AwsCognito\\Exception\\" . $e->getAwsErrorCode();
-
-            if (class_exists($errorClass)) {
-                throw new $errorClass($e);
-            } else {
-                throw $e;
-            }
+            throw CognitoResponseException::createFromCognitoException($e);
         }
     }
 
@@ -103,14 +98,18 @@ class CognitoClient
      */
     public function respondToAuthChallenge($challengeName, array $challengeResponses, $session)
     {
-        $response = $this->client->respondToAuthChallenge([
-            'ChallengeName' => $challengeName,
-            'ChallengeResponses' => $challengeResponses,
-            'ClientId' => $this->appClientId,
-            'Session' => $session,
-        ]);
+        try {
+            $response = $this->client->respondToAuthChallenge([
+                'ChallengeName' => $challengeName,
+                'ChallengeResponses' => $challengeResponses,
+                'ClientId' => $this->appClientId,
+                'Session' => $session,
+            ]);
 
-        return $this->handleAuthenticateResponse($response->toArray());
+            return $this->handleAuthenticateResponse($response->toArray());
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
     }
 
     /**
@@ -137,65 +136,88 @@ class CognitoClient
     /**
      * @param string $username
      * @param string $refreshToken
-     *
-     * @return array
+     * @return string
+     * @throws Exception
      */
     public function refreshAuthentication($username, $refreshToken)
     {
-        $response = $this->client->adminInitiateAuth([
-            'AuthFlow' => 'REFRESH_TOKEN_AUTH',
-            'AuthParameters' => [
-                'USERNAME' => $username,
-                'REFRESH_TOKEN' => $refreshToken,
-                'SECRET_HASH' => $this->cognitoSecretHash($username),
-            ],
-            'ClientId' => $this->appClientId,
-            'UserPoolId' => $this->userPoolId,
-        ])->toArray();
+        try {
+            $response = $this->client->adminInitiateAuth([
+                'AuthFlow' => 'REFRESH_TOKEN_AUTH',
+                'AuthParameters' => [
+                    'USERNAME' => $username,
+                    'REFRESH_TOKEN' => $refreshToken,
+                    'SECRET_HASH' => $this->cognitoSecretHash($username),
+                ],
+                'ClientId' => $this->appClientId,
+                'UserPoolId' => $this->userPoolId,
+            ])->toArray();
 
-        return $response['AuthenticationResult'];
+            return $response['AuthenticationResult'];
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
     }
 
     /**
      * @param string $accessToken
      * @param string $previousPassword
      * @param string $proposedPassword
+     * @throws Exception
+     * @throws TokenExpiryException
+     * @throws TokenVerificationException
      */
     public function changePassword($accessToken, $previousPassword, $proposedPassword)
     {
         $this->verifyAccessToken($accessToken);
 
-        $this->client->changePassword([
-            'AccessToken' => $accessToken,
-            'PreviousPassword' => $previousPassword,
-            'ProposedPassword' => $proposedPassword,
-        ]);
+        try {
+            $this->client->changePassword([
+                'AccessToken' => $accessToken,
+                'PreviousPassword' => $previousPassword,
+                'ProposedPassword' => $proposedPassword,
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
     }
 
     /**
      * @param string $confirmationCode
      * @param string $username
+     * @throws Exception
      */
     public function confirmUserRegistration($confirmationCode, $username)
     {
-        $this->client->confirmSignUp([
-            'ClientId' => $this->appClientId,
-            'ConfirmationCode' => $confirmationCode,
-            'SecretHash' => $this->cognitoSecretHash($username),
-            'Username' => $username,
-        ]);
+        try {
+            $this->client->confirmSignUp([
+                'ClientId' => $this->appClientId,
+                'ConfirmationCode' => $confirmationCode,
+                'SecretHash' => $this->cognitoSecretHash($username),
+                'Username' => $username,
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
     }
 
     /**
      * @param string $accessToken
+     * @throws Exception
+     * @throws TokenExpiryException
+     * @throws TokenVerificationException
      */
     public function deleteUser($accessToken)
     {
         $this->verifyAccessToken($accessToken);
 
-        $this->client->deleteUser([
-            'AccessToken' => $accessToken,
-        ]);
+        try {
+            $this->client->deleteUser([
+                'AccessToken' => $accessToken,
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
     }
 
     /**
@@ -237,8 +259,8 @@ class CognitoClient
      * @param string $username
      * @param string $password
      * @param array $attributes
-     *
      * @return string
+     * @throws Exception
      */
     public function registerUser($username, $password, array $attributes = [])
     {
@@ -250,55 +272,74 @@ class CognitoClient
             ];
         }
 
-        $response = $this->client->signUp([
-            'ClientId' => $this->appClientId,
-            'Password' => $password,
-            'SecretHash' => $this->cognitoSecretHash($username),
-            'UserAttributes' => $userAttributes,
-            'Username' => $username,
-        ]);
+        try {
+            $response = $this->client->signUp([
+                'ClientId' => $this->appClientId,
+                'Password' => $password,
+                'SecretHash' => $this->cognitoSecretHash($username),
+                'UserAttributes' => $userAttributes,
+                'Username' => $username,
+            ]);
 
-        return $response['UserSub'];
+            return $response['UserSub'];
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
     }
 
     /**
      * @param string $confirmationCode
      * @param string $username
      * @param string $proposedPassword
+     * @throws Exception
      */
     public function resetPassword($confirmationCode, $username, $proposedPassword)
     {
-        $this->client->confirmForgotPassword([
-            'ClientId' => $this->appClientId,
-            'ConfirmationCode' => $confirmationCode,
-            'Password' => $proposedPassword,
-            'SecretHash' => $this->cognitoSecretHash($username),
-            'Username' => $username,
-        ]);
+        try {
+            $this->client->confirmForgotPassword([
+                'ClientId' => $this->appClientId,
+                'ConfirmationCode' => $confirmationCode,
+                'Password' => $proposedPassword,
+                'SecretHash' => $this->cognitoSecretHash($username),
+                'Username' => $username,
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
     }
 
     /**
      * @param string $username
+     * @throws Exception
      */
     public function resendRegistrationConfirmationCode($username)
     {
-        $this->client->resendConfirmationCode([
-            'ClientId' => $this->appClientId,
-            'SecretHash' => $this->cognitoSecretHash($username),
-            'Username' => $username,
-        ]);
+        try {
+            $this->client->resendConfirmationCode([
+                'ClientId' => $this->appClientId,
+                'SecretHash' => $this->cognitoSecretHash($username),
+                'Username' => $username,
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
     }
 
     /**
      * @param string $username
+     * @throws Exception
      */
     public function sendForgottenPasswordRequest($username)
     {
-        $this->client->forgotPassword([
-            'ClientId' => $this->appClientId,
-            'SecretHash' => $this->cognitoSecretHash($username),
-            'Username' => $username,
-        ]);
+        try {
+            $this->client->forgotPassword([
+                'ClientId' => $this->appClientId,
+                'SecretHash' => $this->cognitoSecretHash($username),
+                'Username' => $username,
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
     }
 
     /**
