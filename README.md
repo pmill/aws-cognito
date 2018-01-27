@@ -40,6 +40,10 @@ before running them.
 Version History
 ---------------
 
+0.2.3 (27/01/2018)
+
+*   Mapped additional error responses to exceptions
+
 0.2.2 (27/01/2018)
 
 *   Added handling for password reset required responses
