@@ -40,6 +40,10 @@ before running them.
 Version History
 ---------------
 
+0.2.2 (27/01/2018)
+
+*   Added handling for password reset required responses
+
 0.2.1 (25/01/2018)
 
 *   Added method to return full token payload

@@ -2,6 +2,7 @@
 namespace pmill\AwsCognito;
 
 use Aws\CognitoIdentityProvider\CognitoIdentityProviderClient;
+use Aws\CognitoIdentityProvider\Exception\CognitoIdentityProviderException;
 use Exception;
 use Jose\Component\Core\AlgorithmManager;
 use Jose\Component\Core\Converter\StandardConverter;
@@ -67,18 +68,28 @@ class CognitoClient
      */
     public function authenticate($username, $password)
     {
-        $response = $this->client->adminInitiateAuth([
-            'AuthFlow' => 'ADMIN_NO_SRP_AUTH',
-            'AuthParameters' => [
-                'USERNAME' => $username,
-                'PASSWORD' => $password,
-                'SECRET_HASH' => $this->cognitoSecretHash($username),
-            ],
-            'ClientId' => $this->appClientId,
-            'UserPoolId' => $this->userPoolId,
-        ]);
+        try {
+            $response = $this->client->adminInitiateAuth([
+                'AuthFlow' => 'ADMIN_NO_SRP_AUTH',
+                'AuthParameters' => [
+                    'USERNAME' => $username,
+                    'PASSWORD' => $password,
+                    'SECRET_HASH' => $this->cognitoSecretHash($username),
+                ],
+                'ClientId' => $this->appClientId,
+                'UserPoolId' => $this->userPoolId,
+            ]);
 
-        return $this->handleAuthenticateResponse($response->toArray());
+            return $this->handleAuthenticateResponse($response->toArray());
+        } catch (CognitoIdentityProviderException $e) {
+            $errorClass = "pmill\\AwsCognito\\Exception\\" . $e->getAwsErrorCode();
+
+            if (class_exists($errorClass)) {
+                throw new $errorClass($e);
+            } else {
+                throw $e;
+            }
+        }
     }
 
     /**
