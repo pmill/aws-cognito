@@ -267,8 +267,8 @@ class CognitoClient
         $userAttributes = [];
         foreach ($attributes as $key => $value) {
             $userAttributes[] = [
-                'Name' => $key,
-                'Value' => $value,
+                'Name' => (string)$key,
+                'Value' => (string)$value,
             ];
         }
 

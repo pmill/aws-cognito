@@ -9,7 +9,7 @@ This library contains a PHP client for AWS Cognito user pools.
 Requirements
 ------------
 
-This library package requires PHP 7.0 or later
+This library package requires PHP 7.1 or later
 
 Installation
 ------------
@@ -39,6 +39,10 @@ before running them.
 
 Version History
 ---------------
+
+0.2.4 (22/04/2018)
+
+*   Bugfix - Cognito::signUp requires string attributes
 
 0.2.3 (27/01/2018)
 
