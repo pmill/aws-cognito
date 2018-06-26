@@ -40,6 +40,10 @@ before running them.
 Version History
 ---------------
 
+0.2.5 (26/06/2018)
+
+*   Added method to add a user to a group - [bjoernHeneka](https://github.com/bjoernHeneka)
+
 0.2.4 (22/04/2018)
 
 *   Bugfix - Cognito::signUp requires string attributes
