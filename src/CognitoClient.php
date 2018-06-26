@@ -221,6 +221,23 @@ class CognitoClient
     }
 
     /**
+     * @param string $username
+     * @param string $groupName
+     * @throws Exception
+     */
+    public function addUserToGroup($username, $groupName) {
+        try {
+            $this->client->adminAddUserToGroup([
+                'UserPoolId' => $this->userPoolId,
+                'Username' => $username,
+                "GroupName" => $groupName
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
+    /**
      * @return JWKSet
      */
     public function getJwtWebKeys()
