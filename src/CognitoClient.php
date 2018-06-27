@@ -238,6 +238,26 @@ class CognitoClient
     }
 
     /**
+     * @param $username
+     * @param array $attributes
+     * @throws Exception
+     */
+    public function updateUserAttributes($username, array $attributes = [])
+    {
+        $userAttributes = $this->buildAttributesArray($attributes);
+
+        try {
+            $this->client->adminUpdateUserAttributes([
+                'Username' => $username,
+                'UserPoolId' => $this->userPoolId,
+                'UserAttributes' => $userAttributes,
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
+    /**
      * @return JWKSet
      */
     public function getJwtWebKeys()
@@ -281,13 +301,7 @@ class CognitoClient
      */
     public function registerUser($username, $password, array $attributes = [])
     {
-        $userAttributes = [];
-        foreach ($attributes as $key => $value) {
-            $userAttributes[] = [
-                'Name' => (string)$key,
-                'Value' => (string)$value,
-            ];
-        }
+        $userAttributes = $this->buildAttributesArray($attributes);
 
         try {
             $response = $this->client->signUp([
@@ -499,5 +513,21 @@ class CognitoClient
         }
 
         throw new Exception('Could not handle AdminInitiateAuth response');
+    }
+
+    /**
+     * @param array $attributes
+     * @return array
+     */
+    private function buildAttributesArray(array $attributes): array
+    {
+        $userAttributes = [];
+        foreach ($attributes as $key => $value) {
+            $userAttributes[] = [
+                'Name' => (string)$key,
+                'Value' => (string)$value,
+            ];
+        }
+        return $userAttributes;
     }
 }
