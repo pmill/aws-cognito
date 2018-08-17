@@ -40,6 +40,10 @@ before running them.
 Version History
 ---------------
 
+0.2.7 (17/08/2018)
+
+*   Added method to get user details - [brettmc](https://github.com/brettmc)
+
 0.2.6 (27/06/2018)
 
 *   Added method to update a user's custom variables - [bjoernHeneka](https://github.com/bjoernHeneka)
