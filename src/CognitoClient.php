@@ -201,6 +201,25 @@ class CognitoClient
         }
     }
 
+    /*
+     * @param string $username
+     * @return AwsResult
+     * @throws UserNotFoundException
+     * @throws CognitoResponseException
+     */
+    public function getUser($username)
+    {
+        try {
+            $response = $this->client->adminGetUser([
+                'Username' => $username,
+                'UserPoolId' => $this->userPoolId,
+            ]);
+            return $response['data'];
+        } catch (Exception $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
     /**
      * @param string $accessToken
      * @throws Exception
