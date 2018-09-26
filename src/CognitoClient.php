@@ -214,7 +214,16 @@ class CognitoClient
                 'Username' => $username,
                 'UserPoolId' => $this->userPoolId,
             ]);
-            return $response['data'];
+              
+	    return [
+                "username"    => $response->get('Username'),
+                "data"        => $response->get('UserAttributes'),
+                "created_at"  => $response->get('UserCreateDate'),
+                "modified_at" => $response->get('UserLastModifiedDate'),
+                "enabled"     => $response->get('Enabled'),
+                "status"      => $response->get('UserStatus')
+            ];
+
         } catch (Exception $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
