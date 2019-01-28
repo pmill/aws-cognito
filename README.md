@@ -40,6 +40,10 @@ before running them.
 Version History
 ---------------
 
+0.2.8 (17/08/2018)
+
+*   Added method to get user groups - [abelland](https://github.com/abelland)
+
 0.2.7 (17/08/2018)
 
 *   Added method to get user details - [brettmc](https://github.com/brettmc)
