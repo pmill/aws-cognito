@@ -499,6 +499,25 @@ class CognitoClient
     }
 
     /**
+     * @param $username
+     *
+     * @return \Aws\Result
+     * @throws Exception
+     */
+    public function getGroupsForUsername($username)
+    {
+        try {
+            return $this->client->adminListGroupsForUser([
+                'UserPoolId' => $this->userPoolId,
+                'Username'   => $username
+            ]);
+        } catch (Exception $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+
+    }
+
+    /**
      * @param string $message
      *
      * @return string
