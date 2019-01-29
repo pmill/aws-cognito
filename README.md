@@ -40,7 +40,7 @@ before running them.
 Version History
 ---------------
 
-0.2.8 (17/08/2018)
+0.2.8 (28/01/2019)
 
 *   Added method to get user groups - [abelland](https://github.com/abelland)
 
