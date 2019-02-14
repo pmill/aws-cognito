@@ -1,4 +1,5 @@
 <?php
+
 namespace pmill\AwsCognito;
 
 use Aws\CognitoIdentityProvider\CognitoIdentityProviderClient;
@@ -72,7 +73,7 @@ class CognitoClient
         try {
             $response = $this->client->adminInitiateAuth([
                 'AuthFlow' => 'ADMIN_NO_SRP_AUTH',
-                'AuthParameters' => $this->getAuthParamters($username, $password,'PASSWORD'),
+                'AuthParameters' => $this->getAuthParamters($username, $password, 'PASSWORD'),
                 'ClientId' => $this->appClientId,
                 'UserPoolId' => $this->userPoolId,
             ]);
@@ -178,12 +179,7 @@ class CognitoClient
     public function confirmUserRegistration($confirmationCode, $username)
     {
         try {
-            $this->client->confirmSignUp([
-                'ClientId' => $this->appClientId,
-                'ConfirmationCode' => $confirmationCode,
-                'SecretHash' => $this->cognitoSecretHash($username),
-                'Username' => $username,
-            ]);
+            $this->client->confirmSignUp($this->getConfirmUserParamters($confirmationCode, $username));
         } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
@@ -311,13 +307,7 @@ class CognitoClient
         $userAttributes = $this->buildAttributesArray($attributes);
 
         try {
-            $response = $this->client->signUp([
-                'ClientId' => $this->appClientId,
-                'Password' => $password,
-                'SecretHash' => $this->cognitoSecretHash($username),
-                'UserAttributes' => $userAttributes,
-                'Username' => $username,
-            ]);
+            $response = $this->client->signUp($this->getSignUpParameters($username, $password, $userAttributes));
 
             return $response['UserSub'];
         } catch (CognitoIdentityProviderException $e) {
@@ -334,13 +324,7 @@ class CognitoClient
     public function resetPassword($confirmationCode, $username, $proposedPassword)
     {
         try {
-            $this->client->confirmForgotPassword([
-                'ClientId' => $this->appClientId,
-                'ConfirmationCode' => $confirmationCode,
-                'Password' => $proposedPassword,
-                'SecretHash' => $this->cognitoSecretHash($username),
-                'Username' => $username,
-            ]);
+            $this->client->confirmForgotPassword($this->getConfirmForgotPasswordParameters($confirmationCode, $username, $proposedPassword));
         } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
@@ -353,11 +337,7 @@ class CognitoClient
     public function resendRegistrationConfirmationCode($username)
     {
         try {
-            $this->client->resendConfirmationCode([
-                'ClientId' => $this->appClientId,
-                'SecretHash' => $this->cognitoSecretHash($username),
-                'Username' => $username,
-            ]);
+            $this->client->resendConfirmationCode($this->getClientIdAndUsernameParameters($username));
         } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
@@ -370,11 +350,7 @@ class CognitoClient
     public function sendForgottenPasswordRequest($username)
     {
         try {
-            $this->client->forgotPassword([
-                'ClientId' => $this->appClientId,
-                'SecretHash' => $this->cognitoSecretHash($username),
-                'Username' => $username,
-            ]);
+            $this->client->forgotPassword($this->getClientIdAndUsernameParameters($username));
         } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
@@ -497,7 +473,7 @@ class CognitoClient
         try {
             return $this->client->adminListGroupsForUser([
                 'UserPoolId' => $this->userPoolId,
-                'Username'   => $username
+                'Username' => $username
             ]);
         } catch (Exception $e) {
             throw CognitoResponseException::createFromCognitoException($e);
@@ -575,5 +551,79 @@ class CognitoClient
         }
 
         return $authParameters;
+    }
+
+    /**
+     * @param $username
+     * @param $confirmationCode
+     * @return array
+     */
+    private function getConfirmUserParamters($confirmationCode, $username)
+    {
+        $confirmUserParameters = [
+            'ClientId' => $this->appClientId,
+            'ConfirmationCode' => $confirmationCode,
+            'Username' => $username,
+        ];
+
+        if (null !== $this->appClientSecret) {
+            $confirmUserParameters['SecretHash'] = $this->cognitoSecretHash($username);
+        }
+
+        return $confirmUserParameters;
+    }
+
+    /**
+     * @param $username
+     * @return array
+     */
+    private function getClientIdAndUsernameParameters($username)
+    {
+        $clientIdAndUsernameParameters = [
+            'ClientId' => $this->appClientId,
+            'Username' => $username,
+        ];
+
+        if (null !== $this->appClientSecret) {
+            $clientIdAndUsernameParameters['SecretHash'] = $this->cognitoSecretHash($username);
+        }
+
+        return $clientIdAndUsernameParameters;
+    }
+
+    /**
+     * @param $username
+     * @param $password
+     * @param $userAttributes
+     * @return array
+     */
+    private function getSignUpParameters($username, $password, $userAttributes)
+    {
+        $clientIdAndUsernameParamters = $this->getClientIdAndUsernameParameters($username);
+
+        $signUpParameters = [
+            'UserAttributes' => $userAttributes,
+            'Password' => $password,
+        ];
+
+        return array_merge($clientIdAndUsernameParamters, $signUpParameters);
+    }
+
+    /**
+     * @param $confirmationCode
+     * @param $username
+     * @param $proposedPassword
+     * @return array
+     */
+    private function getConfirmForgotPasswordParameters($confirmationCode, $username, $proposedPassword)
+    {
+        $clientIdAndUsernameParamters = $this->getClientIdAndUsernameParameters($username);
+
+        $confirmForgotPasswordParameters = [
+            'ConfirmationCode' => $confirmationCode,
+            'Password' => $proposedPassword,
+        ];
+
+        return array_merge($clientIdAndUsernameParamters, $confirmForgotPasswordParameters);
     }
 }
