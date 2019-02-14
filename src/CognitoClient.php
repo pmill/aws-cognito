@@ -72,11 +72,7 @@ class CognitoClient
         try {
             $response = $this->client->adminInitiateAuth([
                 'AuthFlow' => 'ADMIN_NO_SRP_AUTH',
-                'AuthParameters' => [
-                    'USERNAME' => $username,
-                    'PASSWORD' => $password,
-                    'SECRET_HASH' => $this->cognitoSecretHash($username),
-                ],
+                'AuthParameters' => $this->getAuthParamters($username, $password,'PASSWORD'),
                 'ClientId' => $this->appClientId,
                 'UserPoolId' => $this->userPoolId,
             ]);
@@ -124,11 +120,7 @@ class CognitoClient
     {
         return $this->respondToAuthChallenge(
             self::CHALLENGE_NEW_PASSWORD_REQUIRED,
-            [
-                'NEW_PASSWORD' => $newPassword,
-                'USERNAME' => $username,
-                'SECRET_HASH' => $this->cognitoSecretHash($username),
-            ],
+            $this->getAuthParamters($username, $newPassword, 'NEW_PASSWORD'),
             $session
         );
     }
@@ -144,11 +136,7 @@ class CognitoClient
         try {
             $response = $this->client->adminInitiateAuth([
                 'AuthFlow' => 'REFRESH_TOKEN_AUTH',
-                'AuthParameters' => [
-                    'USERNAME' => $username,
-                    'REFRESH_TOKEN' => $refreshToken,
-                    'SECRET_HASH' => $this->cognitoSecretHash($username),
-                ],
+                'AuthParameters' => $this->getAuthParamters($username, $refreshToken, 'REFRESH_TOKEN'),
                 'ClientId' => $this->appClientId,
                 'UserPoolId' => $this->userPoolId,
             ])->toArray();
@@ -567,5 +555,25 @@ class CognitoClient
             ];
         }
         return $userAttributes;
+    }
+
+    /**
+     * @param $username
+     * @param $tokenOrPassword
+     * @param $tokenOrPasswordKey
+     * @return array
+     */
+    private function getAuthParamters($username, $tokenOrPassword, $tokenOrPasswordKey)
+    {
+        $authParameters = [
+            'USERNAME' => $username,
+            $tokenOrPasswordKey => $tokenOrPassword,
+        ];
+
+        if (null !== $this->appClientSecret) {
+            $authParameters['SECRET_HASH'] = $this->cognitoSecretHash($username);
+        }
+
+        return $authParameters;
     }
 }
