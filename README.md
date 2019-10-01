@@ -1,6 +1,8 @@
 pmill/aws-cognito
 =================
 
+![Downloads](https://poser.pugx.org/pmill/aws-cognito/downloads)
+
 Introduction
 ------------
 
