@@ -263,6 +263,23 @@ class CognitoClient
 
     /**
      * @param string $username
+     * @throws Exception
+     * @throws Exception
+     */
+    public function adminDeleteUser($username)
+    {
+        try {
+            $this->client->adminDeleteUser([
+                'UserPoolId' => $this->userPoolId,
+                'Username' => $username,
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
+    /**
+     * @param string $username
      * @param string $groupName
      * @throws Exception
      */
