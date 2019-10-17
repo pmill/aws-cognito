@@ -3,7 +3,6 @@ namespace pmill\AwsCognito;
 
 use Aws\CognitoIdentityProvider\CognitoIdentityProviderClient;
 use Aws\CognitoIdentityProvider\Exception\CognitoIdentityProviderException;
-use Aws\Result;
 use Exception;
 use Jose\Component\Core\AlgorithmManager;
 use Jose\Component\Core\Converter\StandardConverter;
@@ -205,7 +204,7 @@ class CognitoClient
 
     /*
      * @param string $username
-     * @return Result
+     * @return AwsResult
      * @throws UserNotFoundException
      * @throws CognitoResponseException
      */
@@ -216,26 +215,6 @@ class CognitoClient
                 'Username' => $username,
                 'UserPoolId' => $this->userPoolId,
             ]);
-            return $response;
-        } catch (Exception $e) {
-            throw CognitoResponseException::createFromCognitoException($e);
-        }
-    }
-
-    /**
-     * @param string $username
-     * @return Result
-     * @throws UserNotFoundException
-     * @throws CognitoResponseException
-     */
-    public function getUserGroups($username)
-    {
-        try {
-            $response = $this->client->adminListGroupsForUser([
-                'Username' => $username,
-                'UserPoolId' => $this->userPoolId,
-            ]);
-
             return $response;
         } catch (Exception $e) {
             throw CognitoResponseException::createFromCognitoException($e);
