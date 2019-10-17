@@ -14,7 +14,6 @@ use pmill\AwsCognito\Exception\ChallengeException;
 use pmill\AwsCognito\Exception\CognitoResponseException;
 use pmill\AwsCognito\Exception\TokenExpiryException;
 use pmill\AwsCognito\Exception\TokenVerificationException;
-use pmill\AwsCognito\Exception\UserNotFoundException;
 
 class CognitoClient
 {
