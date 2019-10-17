@@ -42,6 +42,10 @@ before running them.
 Version History
 ---------------
 
+0.2.9 (17/10/2019)
+
+*   Added method to all administrators to delete a user - [bjoernHeneka](https://github.com/bjoernHeneka)
+
 0.2.8 (28/01/2019)
 
 *   Added method to get user groups - [abelland](https://github.com/abelland)
