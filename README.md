@@ -1,6 +1,8 @@
 pmill/aws-cognito
 =================
 
+![Downloads](https://poser.pugx.org/pmill/aws-cognito/downloads)
+
 Introduction
 ------------
 
@@ -39,6 +41,10 @@ before running them.
 
 Version History
 ---------------
+
+0.2.8 (28/01/2019)
+
+*   Added method to get user groups - [abelland](https://github.com/abelland)
 
 0.2.7 (17/08/2018)
 
