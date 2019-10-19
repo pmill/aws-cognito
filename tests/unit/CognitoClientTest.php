@@ -33,7 +33,10 @@ class CognitoClientTest extends TestCase
 
         $this->cognitoIdentityProviderClientMock = $this
             ->getMockBuilder(CognitoIdentityProviderClient::class)
-            ->addMethods(['adminInitiateAuth'])
+            ->addMethods([
+                'adminInitiateAuth',
+                'respondToAuthChallenge'
+            ])
             ->disableOriginalConstructor()
             ->getMockForAbstractClass()
         ;
@@ -71,6 +74,45 @@ class CognitoClientTest extends TestCase
             ->willReturn($response);
 
         $result = $this->cognitoClient->authenticate($username, $password);
+
+        $this->assertSame($rawResponseArray['AuthenticationResult'], $result);
+    }
+
+    public function testRespondToAuthChallenge(): void
+    {
+        $availableChallengeNames = [
+            'SMS_MFA',
+            'SOFTWARE_TOKEN_MFA',
+            'SELECT_MFA_TYPE',
+            'MFA_SETUP',
+            'PASSWORD_VERIFIER',
+            'CUSTOM_CHALLENGE',
+            'DEVICE_SRP_AUTH',
+            'DEVICE_PASSWORD_VERIFIER',
+            'ADMIN_NO_SRP_AUTH',
+            'NEW_PASSWORD_REQUIRED',
+        ];
+        $challengeName = $this->faker->randomElement($availableChallengeNames);
+        $challengeResponses =$this->faker->randomElements($availableChallengeNames, 2);
+        $session = $this->faker->uuid;
+
+        $rawResponseArray = ['AuthenticationResult' => true];
+        $response = $this->createMock(ResultInterface::class);
+        $response->expects(static::once())
+            ->method('toArray')
+            ->willReturn($rawResponseArray);
+
+        $this->cognitoIdentityProviderClientMock->expects(static::once())
+            ->method('respondToAuthChallenge')
+            ->with([
+                'ChallengeName' => $challengeName,
+                'ChallengeResponses' => $challengeResponses,
+                'ClientId' => self::CONFIG['app_client_id'],
+                'Session' => $session,
+            ])
+            ->willReturn($response);
+
+        $result = $this->cognitoClient->respondToAuthChallenge($challengeName, $challengeResponses, $session);
 
         $this->assertSame($rawResponseArray['AuthenticationResult'], $result);
     }
