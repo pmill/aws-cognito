@@ -133,6 +133,30 @@ class CognitoClientTest extends TestCase
         $this->assertSame(self::RAW_RESPONSE_ARRAY['AuthenticationResult'], $result);
     }
 
+    public function testRefreshAuthentication(): void
+    {
+        $username = $this->faker->userName;
+        $refreshToken = $this->faker->word;
+
+        $this->cognitoIdentityProviderClientMock->expects(static::once())
+            ->method('adminInitiateAuth')
+            ->with([
+                'AuthFlow' => 'REFRESH_TOKEN_AUTH',
+                'AuthParameters' => [
+                    'USERNAME' => $username,
+                    'REFRESH_TOKEN' => $refreshToken,
+                    'SECRET_HASH' => $this->cognitoSecretHash($username),
+                ],
+                'ClientId' => self::CONFIG['app_client_id'],
+                'UserPoolId' => self::CONFIG['user_pool_id'],
+            ])
+            ->willReturn($this->getBasicResponse());
+
+        $result = $this->cognitoClient->refreshAuthentication($username, $refreshToken);
+
+        $this->assertSame(self::RAW_RESPONSE_ARRAY['AuthenticationResult'], $result);
+    }
+
     private function getBasicResponse(): MockObject
     {
         $response = $this->createMock(ResultInterface::class);
