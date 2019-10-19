@@ -4,6 +4,7 @@ namespace pmill\AwsCognito\Tests\Unit;
 use Aws\CognitoIdentityProvider\CognitoIdentityProviderClient;
 use Aws\ResultInterface;
 use Faker\Factory;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use pmill\AwsCognito\CognitoClient;
 
@@ -21,6 +22,8 @@ class CognitoClientTest extends TestCase
         'user_pool_id' => 'user_pool_id_test',
     ];
 
+    private const RAW_RESPONSE_ARRAY = ['AuthenticationResult' => true];
+
     private $faker;
 
     /** @var CognitoIdentityProviderClient */
@@ -35,7 +38,7 @@ class CognitoClientTest extends TestCase
             ->getMockBuilder(CognitoIdentityProviderClient::class)
             ->addMethods([
                 'adminInitiateAuth',
-                'respondToAuthChallenge'
+                'respondToAuthChallenge',
             ])
             ->disableOriginalConstructor()
             ->getMockForAbstractClass()
@@ -53,12 +56,6 @@ class CognitoClientTest extends TestCase
         $username = $this->faker->userName;
         $password = $this->faker->password;
 
-        $rawResponseArray = ['AuthenticationResult' => true];
-        $response = $this->createMock(ResultInterface::class);
-        $response->expects(static::once())
-            ->method('toArray')
-            ->willReturn($rawResponseArray);
-
         $this->cognitoIdentityProviderClientMock->expects(static::once())
             ->method('adminInitiateAuth')
             ->with([
@@ -71,11 +68,11 @@ class CognitoClientTest extends TestCase
                 'ClientId' => self::CONFIG['app_client_id'],
                 'UserPoolId' => self::CONFIG['user_pool_id'],
             ])
-            ->willReturn($response);
+            ->willReturn($this->getBasicResponse());
 
         $result = $this->cognitoClient->authenticate($username, $password);
 
-        $this->assertSame($rawResponseArray['AuthenticationResult'], $result);
+        $this->assertSame(self::RAW_RESPONSE_ARRAY['AuthenticationResult'], $result);
     }
 
     public function testRespondToAuthChallenge(): void
@@ -96,12 +93,6 @@ class CognitoClientTest extends TestCase
         $challengeResponses =$this->faker->randomElements($availableChallengeNames, 2);
         $session = $this->faker->uuid;
 
-        $rawResponseArray = ['AuthenticationResult' => true];
-        $response = $this->createMock(ResultInterface::class);
-        $response->expects(static::once())
-            ->method('toArray')
-            ->willReturn($rawResponseArray);
-
         $this->cognitoIdentityProviderClientMock->expects(static::once())
             ->method('respondToAuthChallenge')
             ->with([
@@ -110,11 +101,46 @@ class CognitoClientTest extends TestCase
                 'ClientId' => self::CONFIG['app_client_id'],
                 'Session' => $session,
             ])
-            ->willReturn($response);
+            ->willReturn($this->getBasicResponse());
 
         $result = $this->cognitoClient->respondToAuthChallenge($challengeName, $challengeResponses, $session);
 
-        $this->assertSame($rawResponseArray['AuthenticationResult'], $result);
+        $this->assertSame(self::RAW_RESPONSE_ARRAY['AuthenticationResult'], $result);
+    }
+
+    public function testRespondToNewPasswordRequiredChallenge(): void
+    {
+        $username = $this->faker->userName;
+        $newPassword = $this->faker->password;
+        $session = $this->faker->uuid;
+
+        $this->cognitoIdentityProviderClientMock->expects(static::once())
+            ->method('respondToAuthChallenge')
+            ->with([
+                'ChallengeName' => 'NEW_PASSWORD_REQUIRED',
+                'ChallengeResponses' => [
+                    'NEW_PASSWORD' => $newPassword,
+                    'USERNAME' => $username,
+                    'SECRET_HASH' => $this->cognitoSecretHash($username),
+                ],
+                'ClientId' => self::CONFIG['app_client_id'],
+                'Session' => $session,
+            ])
+            ->willReturn($this->getBasicResponse());
+
+        $result = $this->cognitoClient->respondToNewPasswordRequiredChallenge($username, $newPassword, $session);
+
+        $this->assertSame(self::RAW_RESPONSE_ARRAY['AuthenticationResult'], $result);
+    }
+
+    private function getBasicResponse(): MockObject
+    {
+        $response = $this->createMock(ResultInterface::class);
+        $response->expects(static::once())
+            ->method('toArray')
+            ->willReturn(self::RAW_RESPONSE_ARRAY);
+
+        return $response;
     }
 
     private function cognitoSecretHash($username)
