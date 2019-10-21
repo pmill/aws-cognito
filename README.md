@@ -42,6 +42,10 @@ before running them.
 Version History
 ---------------
 
+0.2.10 (21/10/2019)
+
+*   Added tests - [franjid](https://github.com/franjid)
+
 0.2.9 (17/10/2019)
 
 *   Added method to all administrators to delete a user - [bjoernHeneka](https://github.com/bjoernHeneka)
