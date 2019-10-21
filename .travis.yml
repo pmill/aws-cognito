@@ -3,3 +3,6 @@ rvm:
   - '7.2'
   - '7.3'
   - '7.4'
+
+install:
+  - composer install --no-interaction
