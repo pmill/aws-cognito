@@ -2,6 +2,7 @@ pmill/aws-cognito
 =================
 
 ![Downloads](https://poser.pugx.org/pmill/aws-cognito/downloads)
+[![Build Status](https://travis-ci.com/pmill/aws-cognito.svg?branch=master)](https://travis-ci.com/pmill/aws-cognito)
 
 Introduction
 ------------
