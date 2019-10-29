@@ -30,7 +30,7 @@ curl -sS https://getcomposer.org/installer | php
 Next, run the Composer command to install the latest version:
 
 ```bash
-composer.phar require pmill/aws-cognito
+php composer.phar require pmill/aws-cognito
 ```
 
 Usage
