@@ -209,11 +209,11 @@ class CognitoClient
      * @throws TokenVerificationException
      * @return AwsResult
      */
-    public function getUserByToken($accessToeken)
+    public function getUserByToken($accessToken)
     {
         try {
             $response = $this->client->getUser([
-                'AccessToken' => $accessToeken,
+                'AccessToken' => $accessToken,
             ]);
             return $response;
         } catch (Exception $e) {

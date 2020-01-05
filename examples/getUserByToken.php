@@ -3,13 +3,14 @@
 /** @var \pmill\AwsCognito\CognitoClient $client */
 $client = require(__DIR__ . '/bootstrap.php');
 
-$accessToken = "eygresdfiOiIyVEZ1QVZ0N3JBZEJHSEF6UTB3Z3BvSVJEdXc1SnEwUkt6emJBczNpZ28wPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiIwZGU5ZjA1NS1mMmZmLTQwNDAtODk0ZS03NDk54nk2k3jlskNDIiLCJjb2duaXRvOmdyb3VwcyI6WyJST0xFX1NVUEVSQURNSU5fVVNFUiIsIlJPTEVfQkFER0VfVVNFUiIsIlJPTEVfQURNSU5fVVNFUiIsIlJPTEVfQkFER0VfQURNSU5fVVNFUiIsIlJPTEVfU0FWRVNUT19BRE1JTl9VU0VSIiwiUk9MRV9TQVZFU1RPX1VTRVIiXSwiZXZlbnRfaWQiOiIxMTkyYzEwYS1mYjE1LTQ3MDctYWFhYy05NWUxNjdhMzY2MzUiLCJ0b2tlbl91c2UiOiJhY2Nlc3MiLCJzY29wZSI6ImF3cy5jb2duaXRvLnNpZ25pbi51c2VyLmFkbWluIiwiYXV0aF90aW1lIjoxNTc3MTg0MzMzLCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAuZXUtY2VudHJhbC0xLmFtYXpvbmF3cy5jb21cL2V1LWNlbnRyYWwtMV9PMnU5UFZtTzQiLCJleHAiOjE1NzcxODc5MzMsImlhdCI6MTU3NzE4NDMzNCwianRpIjoiYzc3ZDE1NGYtOWE4NS00NmI3LTkwYzYtYTRkZWY3ZmRmMjhlIiwiY2xpZW50X2lkIjoiMjg4cGQ3ZGRscGd2dGEwNG1xYzh2ZzQ0ZmYiLCJ1c2VybmFtZSI6InJlcG9ydF9hZG1pbiJ9.cCuTvOmpJ9dbSUlPfZvm9YBDMGlADxApX09ary_V7vLtTf_bn4k2vPW8ob8cD8X2ueOO9oQNEEIr1azp9yvvywT5CHl4a4Y8UeGQ_T0ZIwejRl4wf8pme-bDeU_vnWj6M2ywg_BEa7bU43qsZGwtq3lj0Pcti5VqoPJzE3qKWSqlSWsX2E3EKnPdeAheX9p-YPHDpitqSMdXluSLjrrshoevZca4NJqz8eQVHFNplVZV_6ELRhRrMmesIF_nBXC9xWwC5kU7BweWF3AVI4OILl0ZdVmV3ZWL27F77IX3Pk6iVGC7VJlgrfCa9vkGZtfKIGd1hs8cpovRN4cQgdPIRg";
+$username = 'test@example.com';
+$password = 'S3cr3T';
 
-$client->deleteUser($accessToken);
-
+$authenticationResponse = $client->authenticate($username, $password);
+$accessToken = $authenticationResponse['AccessToken'];
 
 try {
-    $user = $client->getUserByToken($username);
+    $user = $client->getUserByToken($accessToken);
     echo $user['Username'].PHP_EOL;
     var_dump($user['UserAttributes']);
 } catch (Exception $e) {
