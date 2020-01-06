@@ -1,4 +1,5 @@
 <?php
+
 namespace pmill\AwsCognito;
 
 use Aws\CognitoIdentityProvider\CognitoIdentityProviderClient;
@@ -201,6 +202,25 @@ class CognitoClient
         }
     }
 
+    /**
+     * @param string $accessToken
+     * @throws Exception
+     * @throws TokenExpiryException
+     * @throws TokenVerificationException
+     * @return AwsResult
+     */
+    public function getUserByToken($accessToken)
+    {
+        try {
+            $response = $this->client->getUser([
+                'AccessToken' => $accessToken,
+            ]);
+            return $response;
+        } catch (Exception $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
     /*
      * @param string $username
      * @return AwsResult
@@ -261,7 +281,8 @@ class CognitoClient
      * @param string $groupName
      * @throws Exception
      */
-    public function addUserToGroup($username, $groupName) {
+    public function addUserToGroup($username, $groupName)
+    {
         try {
             $this->client->adminAddUserToGroup([
                 'UserPoolId' => $this->userPoolId,
@@ -480,10 +501,10 @@ class CognitoClient
      *
      * @param string $accessToken
      *
-     * @throws TokenExpiryException
+     * @return string
      * @throws TokenVerificationException
      *
-     * @return string
+     * @throws TokenExpiryException
      */
     public function verifyAccessToken($accessToken)
     {
@@ -526,7 +547,7 @@ class CognitoClient
         try {
             return $this->client->adminListGroupsForUser([
                 'UserPoolId' => $this->userPoolId,
-                'Username'   => $username
+                'Username' => $username
             ]);
         } catch (Exception $e) {
             throw CognitoResponseException::createFromCognitoException($e);
