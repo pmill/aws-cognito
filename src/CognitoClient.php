@@ -261,6 +261,48 @@ class CognitoClient
 
     /**
      * @param string $username
+     * @param string $password
+     * @param array $userAttributes
+     * @param boolean $confirmSignup
+     * @return object
+     * @throws Exception
+     */
+    public function adminCreateUser($username, $password, $attributes = [], $confirmSignup = true)
+    {
+        try {
+            $registeredUser = $this->client->adminCreateUser([
+                'UserPoolId' => $this->userPoolId,
+                'Username' => $username,
+                'TemporaryPassword' => $password,
+                'UserAttributes' => $attributes,
+                'MessageAction' => "SUPPRESS",
+                'DesiredDeliveryMediums' => ["EMAIL"]
+            ]);
+
+            /**
+            * Auto confirm added user if confirm signup is set to true
+            */
+            if($confirmSignup){
+                $respAuthenticate = [];
+                try {
+                    $respAuthenticate = $this->authenticate($username, $password);
+                } catch (ChallengeException $e) {
+                    if ($e->getChallengeName() === self::CHALLENGE_NEW_PASSWORD_REQUIRED) {
+                        $respAuthenticate = $this->respondToNewPasswordRequiredChallenge($username, $password, $e->getSession());
+                    }
+                }
+                return $respAuthenticate;
+            }
+
+            return $registeredUser;
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
+
+    /**
+     * @param string $username
      * @throws Exception
      * @throws Exception
      */
