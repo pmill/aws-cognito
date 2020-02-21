@@ -332,7 +332,18 @@ class CognitoClient
                 "GroupName" => $groupName
             ]);
         } catch (CognitoIdentityProviderException $e) {
-            throw CognitoResponseException::createFromCognitoException($e);
+            if($e->getAwsErrorCode() == "ResourceNotFoundException"){
+                try{
+                    $this->client->createGroup([
+                        "GroupName" => $groupName,
+                        "UserPoolId" => $this->userPoolId
+                    ]);
+                    $this->addUserToGroup($username, $groupName);
+                } catch( AwsException $ae ){}
+                
+            }else{
+                throw CognitoResponseException::createFromCognitoException($e);
+            }
         }
     }
 
