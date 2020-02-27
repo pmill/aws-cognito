@@ -235,7 +235,7 @@ class CognitoClient
                 'UserPoolId' => $this->userPoolId,
             ]);
             return $response;
-        } catch (Exception $e) {
+        } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
     }
@@ -293,7 +293,7 @@ class CognitoClient
      * @return object
      * @throws Exception
      */
-    public function adminCofirmAddedUser($username, $password){
+    public function adminConfirmAddedUser($username, $password){
         $respAuthenticate = [];
         try {
             $respAuthenticate = $this->authenticate($username, $password);
@@ -337,18 +337,24 @@ class CognitoClient
                 "GroupName" => $groupName
             ]);
         } catch (CognitoIdentityProviderException $e) {
-            if($e->getAwsErrorCode() == "ResourceNotFoundException"){
-                try{
-                    $this->client->createGroup([
-                        "GroupName" => $groupName,
-                        "UserPoolId" => $this->userPoolId
-                    ]);
-                    $this->addUserToGroup($username, $groupName);
-                } catch( AwsException $ae ){}
-                
-            }else{
-                throw CognitoResponseException::createFromCognitoException($e);
-            }
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
+    /**
+     * Create a group for users
+     * @param string $username
+     * @param string $groupName
+     * @throws Exception
+     */
+    public function createUserGroup($groupName){
+        try{
+            $this->client->createGroup([
+                "GroupName" => $groupName,
+                "UserPoolId" => $this->userPoolId
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
         }
     }
 
