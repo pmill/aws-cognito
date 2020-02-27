@@ -267,7 +267,7 @@ class CognitoClient
      * @return object
      * @throws Exception
      */
-    public function adminCreateUser($username, $password, $attributes = [], $confirmSignup = true)
+    public function adminCreateUser($username, $password, $attributes = [])
     {
         try {
             $registeredUser = $this->client->adminCreateUser([
@@ -279,25 +279,30 @@ class CognitoClient
                 'DesiredDeliveryMediums' => ["EMAIL"]
             ]);
 
-            /**
-            * Auto confirm added user if confirm signup is set to true
-            */
-            if($confirmSignup){
-                $respAuthenticate = [];
-                try {
-                    $respAuthenticate = $this->authenticate($username, $password);
-                } catch (ChallengeException $e) {
-                    if ($e->getChallengeName() === self::CHALLENGE_NEW_PASSWORD_REQUIRED) {
-                        $respAuthenticate = $this->respondToNewPasswordRequiredChallenge($username, $password, $e->getSession());
-                    }
-                }
-                return $respAuthenticate;
-            }
-
             return $registeredUser;
         } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
+    }
+
+
+    /**
+     * Set a admin added user as CONFIRMED. It sets the parameter password as final
+     * @param string $username
+     * @param string $password
+     * @return object
+     * @throws Exception
+     */
+    public function adminCofirmAddedUser($username, $password){
+        $respAuthenticate = [];
+        try {
+            $respAuthenticate = $this->authenticate($username, $password);
+        } catch (ChallengeException $e) {
+            if ($e->getChallengeName() === self::CHALLENGE_NEW_PASSWORD_REQUIRED) {
+                $respAuthenticate = $this->respondToNewPasswordRequiredChallenge($username, $password, $e->getSession());
+            }
+        }
+        return $respAuthenticate;
     }
 
 
