@@ -259,6 +259,37 @@ class CognitoClient
         }
     }
 
+    
+    /**
+    * Disable a user
+    * @param string $username
+    */
+    public function adminEnableUser($username){
+        try {
+            $this->client->adminEnableUser([
+                'UserPoolId' => $this->userPoolId,
+                'Username' => $username
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+    
+    /**
+    * Disable a user
+    * @param string $username
+    */
+    public function adminDisableUser($username){
+        try {
+            $this->client->adminDisableUser([
+                'UserPoolId' => $this->userPoolId,
+                'Username' => $username
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+    
     /**
      * @param string $username
      * @param string $password
@@ -269,12 +300,13 @@ class CognitoClient
      */
     public function adminCreateUser($username, $password, $attributes = [])
     {
+        $userAttributes = $this->buildAttributesArray($attributes);
         try {
             $registeredUser = $this->client->adminCreateUser([
                 'UserPoolId' => $this->userPoolId,
                 'Username' => $username,
                 'TemporaryPassword' => $password,
-                'UserAttributes' => $attributes,
+                'UserAttributes' => $userAttributes,
                 'MessageAction' => "SUPPRESS",
                 'DesiredDeliveryMediums' => ["EMAIL"]
             ]);
