@@ -264,9 +264,10 @@ class CognitoClient
     * Disable a user
     * @param string $username
     */
-    public function adminEnableUser($username){
+    public function adminEnableUser($username)
+    {
         try {
-            $this->client->adminEnableUser([
+            return $this->client->adminEnableUser([
                 'UserPoolId' => $this->userPoolId,
                 'Username' => $username
             ]);
@@ -279,9 +280,10 @@ class CognitoClient
     * Disable a user
     * @param string $username
     */
-    public function adminDisableUser($username){
+    public function adminDisableUser($username)
+    {
         try {
-            $this->client->adminDisableUser([
+            return $this->client->adminDisableUser([
                 'UserPoolId' => $this->userPoolId,
                 'Username' => $username
             ]);
@@ -325,7 +327,8 @@ class CognitoClient
      * @return object
      * @throws Exception
      */
-    public function adminConfirmAddedUser($username, $password){
+    public function adminConfirmAddedUser($username, $password)
+    {
         $respAuthenticate = [];
         try {
             $respAuthenticate = $this->authenticate($username, $password);
@@ -379,7 +382,8 @@ class CognitoClient
      * @param string $groupName
      * @throws Exception
      */
-    public function createUserGroup($groupName){
+    public function createGroup($groupName)
+    {
         try{
             $this->client->createGroup([
                 "GroupName" => $groupName,
