@@ -319,28 +319,6 @@ class CognitoClient
         }
     }
 
-
-    /**
-     * Set a admin added user as CONFIRMED. It sets the parameter password as final
-     * @param string $username
-     * @param string $password
-     * @return object
-     * @throws Exception
-     */
-    public function adminConfirmAddedUser($username, $password)
-    {
-        $respAuthenticate = [];
-        try {
-            $respAuthenticate = $this->authenticate($username, $password);
-        } catch (ChallengeException $e) {
-            if ($e->getChallengeName() === self::CHALLENGE_NEW_PASSWORD_REQUIRED) {
-                $respAuthenticate = $this->respondToNewPasswordRequiredChallenge($username, $password, $e->getSession());
-            }
-        }
-        return $respAuthenticate;
-    }
-
-
     /**
      * @param string $username
      * @throws Exception
