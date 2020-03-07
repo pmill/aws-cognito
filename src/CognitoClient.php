@@ -362,8 +362,8 @@ class CognitoClient
      */
     public function createGroup($groupName)
     {
-        try{
-            $this->client->createGroup([
+        try {
+            return $this->client->createGroup([
                 "GroupName" => $groupName,
                 "UserPoolId" => $this->userPoolId
             ]);
