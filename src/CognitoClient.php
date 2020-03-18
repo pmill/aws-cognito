@@ -292,6 +292,30 @@ class CognitoClient
         }
     }
     
+
+    /**
+    * @param string $username
+    * @param string $password
+    * @param boolean $permanent, decide whether to set this password as parmanent
+    *
+    * @return empty body
+    * @throws Exception
+    */
+    public function adminSetUserPassword($username, $password, $permanent = 0)
+    {
+        $permanent = filter_var($permanent, FILTER_VALIDATE_BOOLEAN);
+        try {
+            return $this->client->AdminSetUserPassword([
+               "Password" => $password,
+               "Permanent" => $permanent,
+               "Username" => $username,
+               "UserPoolId" => $this->userPoolId
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
     /**
      * @param string $username
      * @param string $password

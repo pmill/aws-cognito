@@ -43,15 +43,6 @@ before running them.
 Version History
 ---------------
 
-0.2.11 (28/02/2020)
-
-*   Added method to create a user group - [abhi36](https://github.com/abhi36)
-
-0.2.11 (22/02/2020)
-
-*   Added method to create a user by admin and set the status to CONFIRMED - [abhi36](https://github.com/abhi36)
-
-
 0.2.10 (21/10/2019)
 
 *   Added tests - [franjid](https://github.com/franjid)
