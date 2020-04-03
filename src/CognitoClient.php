@@ -365,6 +365,24 @@ class CognitoClient
      * @param string $groupName
      * @throws Exception
      */
+    public function removeUserFromGroup($username, $groupName)
+    {
+        try {
+            $this->client->adminRemoveUserFromGroup([
+                'UserPoolId' => $this->userPoolId,
+                'Username' => $username,
+                "GroupName" => $groupName
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
+    /**
+     * @param string $username
+     * @param string $groupName
+     * @throws Exception
+     */
     public function addUserToGroup($username, $groupName)
     {
         try {
