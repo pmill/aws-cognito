@@ -43,10 +43,6 @@ before running them.
 Version History
 ---------------
 
-0.2.11 (06/01/2020)
-
-Added method to get a user by an access token - bjoernHeneka
-
 0.2.10 (21/10/2019)
 
 *   Added tests - [franjid](https://github.com/franjid)
