@@ -512,15 +512,15 @@ class CognitoClient
 
         $expectedIss = sprintf('https://cognito-idp.%s.amazonaws.com/%s', $this->region, $this->userPoolId);
         if ($jwtPayload['iss'] !== $expectedIss) {
-            throw new TokenVerificationException('invalid iss');
+            throw new TokenVerificationException('Invalid token issuer');
         }
 
         if ( !in_array($jwtPayload['token_use'], ['id','access']) ) {
-            throw new TokenVerificationException('invalid token_use');
+            throw new TokenVerificationException('Invalid token purpose/use');
         }
 
         if ($jwtPayload['exp'] < time()) {
-            throw new TokenExpiryException('invalid exp');
+            throw new TokenExpiryException('Expired token');
         }
 
         return $jwtPayload['username'] ?? $jwtPayload['cognito:username'];
