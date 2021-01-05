@@ -72,7 +72,7 @@ class CognitoClient
     {
         try {
             $response = $this->client->adminInitiateAuth([
-                'AuthFlow' => 'ADMIN_NO_SRP_AUTH',
+                'AuthFlow' => 'ADMIN_USER_PASSWORD_AUTH',
                 'AuthParameters' => [
                     'USERNAME' => $username,
                     'PASSWORD' => $password,
