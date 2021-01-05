@@ -89,6 +89,27 @@ class CognitoClient
     }
 
     /**
+     * @param string $username
+     * @param string $password
+     * @param bool $isPermanent
+     *
+     * @throws Exception
+     */
+    public function adminSetUserPassword(string $username, string $password, bool $isPermanent = true)
+    {
+        try {
+            $this->client->adminSetUserPassword([
+                'Password' => $password,
+                'Permanent' => $isPermanent,
+                'UserPoolId' => $this->userPoolId,
+                'Username' => $username,
+            ]);
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
+    /**
      * @param string $challengeName
      * @param array $challengeResponses
      * @param string $session
@@ -370,6 +391,50 @@ class CognitoClient
             ]);
 
             return $response['UserSub'];
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
+    /**
+     * @param string $username
+     * @param array $attributes
+     * @param array $parameters
+     *
+     * @return array User
+     * @throws Exception
+     */
+    public function adminCreateUser(string $username, array $attributes = [], array $parameters = [])
+    {
+        $userAttributes = $this->buildAttributesArray($attributes);
+        $createParameters = [
+            'UserAttributes' => $userAttributes,
+            'UserPoolId' => $this->userPoolId,
+            'Username' => $username
+        ];
+
+        $createUserParameters = array_merge($createParameters, $parameters);
+
+        try {
+            $response = $this->client->adminCreateUser($createUserParameters);
+            return $response['User'];
+        } catch (CognitoIdentityProviderException $e) {
+            throw CognitoResponseException::createFromCognitoException($e);
+        }
+    }
+
+    /**
+     * @param string $username
+     *
+     * @throws Exception
+     */
+    public function adminResetUserPassword(string $username)
+    {
+        try {
+            $this->client->adminResetUserPassword([
+                'UserPoolId' => $this->userPoolId,
+                'Username' => $username
+            ]);
         } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
