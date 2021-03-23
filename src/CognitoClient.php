@@ -6,7 +6,6 @@ use Aws\CognitoIdentityProvider\CognitoIdentityProviderClient;
 use Aws\CognitoIdentityProvider\Exception\CognitoIdentityProviderException;
 use Exception;
 use Jose\Component\Core\AlgorithmManager;
-use Jose\Component\Core\Converter\StandardConverter;
 use Jose\Component\Core\JWKSet;
 use Jose\Component\Signature\Algorithm\RS256;
 use Jose\Component\Signature\JWSVerifier;
@@ -477,11 +476,9 @@ class CognitoClient
      */
     public function decodeAccessToken($accessToken)
     {
-        $algorithmManager = AlgorithmManager::create([
-            new RS256(),
-        ]);
+        $algorithmManager = new AlgorithmManager([new RS256()]);
 
-        $serializerManager = new CompactSerializer(new StandardConverter());
+        $serializerManager = new CompactSerializer();
 
         $jws = $serializerManager->unserialize($accessToken);
         $jwsVerifier = new JWSVerifier(
@@ -512,15 +509,15 @@ class CognitoClient
 
         $expectedIss = sprintf('https://cognito-idp.%s.amazonaws.com/%s', $this->region, $this->userPoolId);
         if ($jwtPayload['iss'] !== $expectedIss) {
-            throw new TokenVerificationException('invalid iss');
+            throw new TokenVerificationException('Invalid token issuer');
         }
 
         if ( !in_array($jwtPayload['token_use'], ['id','access']) ) {
-            throw new TokenVerificationException('invalid token_use');
+            throw new TokenVerificationException('Invalid token purpose/use');
         }
 
         if ($jwtPayload['exp'] < time()) {
-            throw new TokenExpiryException('invalid exp');
+            throw new TokenExpiryException('Expired token');
         }
 
         return $jwtPayload['username'] ?? $jwtPayload['cognito:username'];
