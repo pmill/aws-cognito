@@ -6,7 +6,6 @@ use Aws\CognitoIdentityProvider\CognitoIdentityProviderClient;
 use Aws\CognitoIdentityProvider\Exception\CognitoIdentityProviderException;
 use Exception;
 use Jose\Component\Core\AlgorithmManager;
-use Jose\Component\Core\Converter\StandardConverter;
 use Jose\Component\Core\JWKSet;
 use Jose\Component\Signature\Algorithm\RS256;
 use Jose\Component\Signature\JWSVerifier;
@@ -477,11 +476,9 @@ class CognitoClient
      */
     public function decodeAccessToken($accessToken)
     {
-        $algorithmManager = AlgorithmManager::create([
-            new RS256(),
-        ]);
+        $algorithmManager = new AlgorithmManager([new RS256()]);
 
-        $serializerManager = new CompactSerializer(new StandardConverter());
+        $serializerManager = new CompactSerializer();
 
         $jws = $serializerManager->unserialize($accessToken);
         $jwsVerifier = new JWSVerifier(
