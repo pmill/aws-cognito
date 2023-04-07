@@ -30,7 +30,7 @@ class CognitoClientTest extends TestCase
     private $cognitoIdentityProviderClientMock;
     private $cognitoClient;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->faker = Factory::create();
 
