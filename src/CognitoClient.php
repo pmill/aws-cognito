@@ -207,7 +207,7 @@ class CognitoClient
      * @throws Exception
      * @throws TokenExpiryException
      * @throws TokenVerificationException
-     * @return AwsResult
+     * @return \Aws\Result
      */
     public function getUserByToken($accessToken)
     {
@@ -216,7 +216,7 @@ class CognitoClient
                 'AccessToken' => $accessToken,
             ]);
             return $response;
-        } catch (Exception $e) {
+        } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
     }
@@ -235,7 +235,7 @@ class CognitoClient
                 'UserPoolId' => $this->userPoolId,
             ]);
             return $response;
-        } catch (Exception $e) {
+        } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
     }
@@ -481,7 +481,7 @@ class CognitoClient
             new RS256(),
         ]);
 
-        $serializerManager = new CompactSerializer(new StandardConverter());
+        $serializerManager = new CompactSerializer();
 
         $jws = $serializerManager->unserialize($accessToken);
         $jwsVerifier = new JWSVerifier(
@@ -549,7 +549,7 @@ class CognitoClient
                 'UserPoolId' => $this->userPoolId,
                 'Username' => $username
             ]);
-        } catch (Exception $e) {
+        } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
 
