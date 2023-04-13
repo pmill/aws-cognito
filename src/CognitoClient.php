@@ -477,7 +477,7 @@ class CognitoClient
      */
     public function decodeAccessToken($accessToken)
     {
-        $algorithmManager = AlgorithmManager::create([
+        $algorithmManager = new AlgorithmManager([
             new RS256(),
         ]);
 
@@ -515,7 +515,7 @@ class CognitoClient
             throw new TokenVerificationException('invalid iss');
         }
 
-        if ( !in_array($jwtPayload['token_use'], ['id','access']) ) {
+        if (!in_array($jwtPayload['token_use'], ['id', 'access'])) {
             throw new TokenVerificationException('invalid token_use');
         }
 
@@ -600,8 +600,8 @@ class CognitoClient
         $userAttributes = [];
         foreach ($attributes as $key => $value) {
             $userAttributes[] = [
-                'Name' => (string)$key,
-                'Value' => (string)$value,
+                'Name' => (string) $key,
+                'Value' => (string) $value,
             ];
         }
         return $userAttributes;
