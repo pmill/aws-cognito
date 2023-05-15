@@ -20,14 +20,19 @@ class CognitoResponseException extends Exception
      * @param CognitoIdentityProviderException $e
      * @return Exception
      */
-    public static function createFromCognitoException(CognitoIdentityProviderException $e)
+    public static function createFromCognitoException(Exception $e)
     {
-        $errorClass = "pmill\\AwsCognito\\Exception\\" . $e->getAwsErrorCode();
+        //If the class is CognitoIdentityProviderException, perform this custom logic
+        //to get the actual AWS error
+        if (method_exists($e, 'getAwsErrorCode')) {
+            $errorClass = "pmill\\AwsCognito\\Exception\\" . $e->getAwsErrorCode();
 
-        if (class_exists($errorClass)) {
-            return new $errorClass($e);
+            if (class_exists($errorClass)) {
+                return new $errorClass($e);
+            }
         }
 
+        //Otherwise just return the Exception as is
         return $e;
     }
 }
