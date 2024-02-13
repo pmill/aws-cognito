@@ -207,7 +207,7 @@ class CognitoClient
      * @throws Exception
      * @throws TokenExpiryException
      * @throws TokenVerificationException
-     * @return AwsResult
+     * @return \Aws\Result
      */
     public function getUserByToken($accessToken)
     {
@@ -216,7 +216,7 @@ class CognitoClient
                 'AccessToken' => $accessToken,
             ]);
             return $response;
-        } catch (Exception $e) {
+        } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
     }
@@ -235,7 +235,7 @@ class CognitoClient
                 'UserPoolId' => $this->userPoolId,
             ]);
             return $response;
-        } catch (Exception $e) {
+        } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
     }
@@ -477,11 +477,11 @@ class CognitoClient
      */
     public function decodeAccessToken($accessToken)
     {
-        $algorithmManager = AlgorithmManager::create([
+        $algorithmManager = new AlgorithmManager([
             new RS256(),
         ]);
 
-        $serializerManager = new CompactSerializer(new StandardConverter());
+        $serializerManager = new CompactSerializer();
 
         $jws = $serializerManager->unserialize($accessToken);
         $jwsVerifier = new JWSVerifier(
@@ -515,7 +515,7 @@ class CognitoClient
             throw new TokenVerificationException('invalid iss');
         }
 
-        if ( !in_array($jwtPayload['token_use'], ['id','access']) ) {
+        if (!in_array($jwtPayload['token_use'], ['id', 'access'])) {
             throw new TokenVerificationException('invalid token_use');
         }
 
@@ -549,7 +549,7 @@ class CognitoClient
                 'UserPoolId' => $this->userPoolId,
                 'Username' => $username
             ]);
-        } catch (Exception $e) {
+        } catch (CognitoIdentityProviderException $e) {
             throw CognitoResponseException::createFromCognitoException($e);
         }
 
@@ -600,8 +600,8 @@ class CognitoClient
         $userAttributes = [];
         foreach ($attributes as $key => $value) {
             $userAttributes[] = [
-                'Name' => (string)$key,
-                'Value' => (string)$value,
+                'Name' => (string) $key,
+                'Value' => (string) $value,
             ];
         }
         return $userAttributes;
