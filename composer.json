@@ -1,27 +1,34 @@
 {
-  "name": "pmill/aws-cognito",
-  "description": "A PHP client for AWS Cognito user pools",
-  "keywords": ["php", "authentication", "aws", "cognito", "api"],
-  "homepage": "https://github.com/pmill/aws-cognito",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "pmill",
-      "email": "dev.pmill@gmail.com"
+    "name": "pmill/aws-cognito",
+    "description": "A PHP client for AWS Cognito user pools",
+    "keywords": [
+        "php",
+        "authentication",
+        "aws",
+        "cognito",
+        "api"
+    ],
+    "homepage": "https://github.com/pmill/aws-cognito",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "pmill",
+            "email": "dev.pmill@gmail.com"
+        }
+    ],
+    "require": {
+        "aws/aws-sdk-php": "^3.26",
+        "web-token/jwt-signature": "^3.1.7",
+        "web-token/jwt-signature-algorithm-rsa": "^3.1.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "pmill\\AwsCognito\\": "src/",
+            "pmill\\AwsCognito\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.21",
+        "phpunit/phpunit": "^9.0"
     }
-  ],
-  "require": {
-    "aws/aws-sdk-php": "^3.26",
-    "web-token/jwt-signature": "^1.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "pmill\\AwsCognito\\": "src/",
-      "pmill\\AwsCognito\\Tests\\": "tests/"
-    }
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^8.4",
-    "fzaninotto/faker": "^1.8"
-  }
 }
